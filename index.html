@@ -369,14 +369,22 @@
                 let clientX, clientY;
                 
                 if (event.touches && event.touches[0]) {
-                    clientX = event.touches[0].clientX;
-                    clientY = event.touches[0].clientY;
+                    // タッチイベントの場合
+                    clientX = event.touches[0].pageX;
+                    clientY = event.touches[0].pageY;
+                    
+                    // ページスクロールを考慮
+                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    clientX = clientX - scrollLeft;
+                    clientY = clientY - scrollTop;
                 } else {
+                    // マウスイベントの場合
                     clientX = event.clientX;
                     clientY = event.clientY;
                 }
                 
-                // Paper.jsのビューサイズに合わせて座標を変換
                 const x = clientX - rect.left;
                 const y = clientY - rect.top;
                 
