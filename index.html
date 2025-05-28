@@ -20,15 +20,16 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            margin: 0;
+            padding: 0;
         }
 
         #canvas {
             background: white;
             cursor: crosshair;
             border-radius: 8px;
-            margin: 10px auto 5px auto;
-            flex: 1;
-            max-height: calc(100vh - 120px);
+            margin: 10px auto;
+            display: block;
         }
 
         .toolbar {
@@ -36,8 +37,9 @@
             align-items: center;
             justify-content: center;
             gap: 15px;
-            padding: 15px;
+            padding: 10px;
             flex-wrap: wrap;
+            flex-shrink: 0;
         }
 
         .tool-button {
@@ -226,8 +228,7 @@
             }
             
             #canvas {
-                margin: 5px auto 5px auto;
-                max-height: calc(100vh - 100px);
+                margin: 5px auto;
             }
         }
     </style>
@@ -266,30 +267,22 @@
             function resizeCanvas() {
                 const toolbar = document.querySelector('.toolbar');
                 const toolbarHeight = toolbar.offsetHeight;
-                const margin = 20; // スマホ用にマージンを小さく
                 
-                // ビューポートの実際の高さを取得
-                const viewportHeight = window.innerHeight;
-                const viewportWidth = window.innerWidth;
+                // 画面いっぱいのサイズを計算
+                const width = window.innerWidth - 20;  // 左右10pxずつマージン
+                const height = window.innerHeight - toolbarHeight - 20; // 上下10pxずつマージン
                 
-                const width = viewportWidth - margin;
-                const height = viewportHeight - toolbarHeight - margin;
-                
-                // 最小サイズを確保
-                const minHeight = 200;
-                const finalHeight = Math.max(height, minHeight);
-                
-                // Canvas要素のサイズとPaper.jsのビューサイズを同期
+                // Canvas要素の内部解像度とスタイルサイズを設定
                 canvas.width = width;
-                canvas.height = finalHeight;
+                canvas.height = height;
                 canvas.style.width = width + 'px';
-                canvas.style.height = finalHeight + 'px';
+                canvas.style.height = height + 'px';
                 
                 if (paper.view) {
-                    paper.view.viewSize = new Size(width, finalHeight);
+                    paper.view.viewSize = new Size(width, height);
                 }
                 
-                console.log('Canvas size:', width, 'x', finalHeight, 'Viewport:', viewportWidth, 'x', viewportHeight);
+                console.log('Canvas resized:', width, 'x', height);
             }
             
             resizeCanvas();
@@ -369,24 +362,17 @@
                 let clientX, clientY;
                 
                 if (event.touches && event.touches[0]) {
-                    // タッチイベントの場合
-                    clientX = event.touches[0].pageX;
-                    clientY = event.touches[0].pageY;
-                    
-                    // ページスクロールを考慮
-                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    
-                    clientX = clientX - scrollLeft;
-                    clientY = clientY - scrollTop;
+                    clientX = event.touches[0].clientX;
+                    clientY = event.touches[0].clientY;
                 } else {
-                    // マウスイベントの場合
                     clientX = event.clientX;
                     clientY = event.clientY;
                 }
                 
                 const x = clientX - rect.left;
                 const y = clientY - rect.top;
+                
+                console.log('Touch:', clientX, clientY, 'Canvas:', x, y, 'Rect:', rect.left, rect.top);
                 
                 return new Point(x, y);
             }
