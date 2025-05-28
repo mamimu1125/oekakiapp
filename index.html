@@ -335,6 +335,13 @@
             // カラーピッカー
             colorPicker.addEventListener('change', (e) => {
                 currentColor = e.target.value;
+                updateBrushPreview();
+            });
+            
+            // リアルタイムでの色変更にも対応
+            colorPicker.addEventListener('input', (e) => {
+                currentColor = e.target.value;
+                updateBrushPreview();
             });
             
             // ペンツール
