@@ -465,10 +465,10 @@
             canvas.addEventListener('mouseleave', () => brushPreview.style.display = 'none');
             
             function startDrawing(point, pointerType) {
-                // ペン以外の入力を無視（オプション）
+                // 指でのタッチの場合は描画しない
                 if (pointerType === 'touch') {
-                    // 指でのタッチの場合は描画しない
-                    // return;
+                    console.log('指でのタッチは無効です。ペンを使用してください。');
+                    return;
                 }
                 
                 isDrawing = true;
