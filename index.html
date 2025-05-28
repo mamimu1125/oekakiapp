@@ -383,13 +383,39 @@
             saveButton.addEventListener('click', () => {
                 // キャンバスからPNG形式でダウンロード
                 const dataURL = canvas.toDataURL('image/png');
-                const link = document.createElement('a');
-                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-                link.download = `drawing_${timestamp}.png`;
-                link.href = dataURL;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                
+                // モバイルデバイスの判定
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                    // モバイルの場合：新しいタブで画像を開く
+                    const newWindow = window.open();
+                    if (newWindow) {
+                        newWindow.document.write(`
+                            <html>
+                                <head>
+                                    <title>描画作品</title>
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                </head>
+                                <body style="margin:0; background:#f0f0f0; display:flex; flex-direction:column; justify-content:center; align-items:center; min-height:100vh;">
+                                    <img src="${dataURL}" style="max-width:90vw; max-height:80vh; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+                                    <p style="color:#666; text-align:center; padding:20px;">長押しして「写真に保存」または「画像を保存」を選択してください</p>
+                                </body>
+                            </html>
+                        `);
+                    } else {
+                        alert('新しいタブが開けませんでした。ポップアップブロックを無効にしてください。');
+                    }
+                } else {
+                    // デスクトップの場合：直接ダウンロード
+                    const link = document.createElement('a');
+                    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                    link.download = `drawing_${timestamp}.png`;
+                    link.href = dataURL;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
             });
             
             // クリアボタン
@@ -450,11 +476,34 @@
                 updateBrushPreview();
             });
             
+            // タッチ移動時のブラシプレビュー
+            canvas.addEventListener('touchmove', (e) => {
+                if (e.touches && e.touches[0]) {
+                    brushPreview.style.left = e.touches[0].clientX + 'px';
+                    brushPreview.style.top = e.touches[0].clientY + 'px';
+                    updateBrushPreview();
+                }
+            });
+            
             canvas.addEventListener('mouseenter', () => {
                 updateBrushPreview();
             });
             
             canvas.addEventListener('mouseleave', () => {
+                brushPreview.style.display = 'none';
+            });
+            
+            // タッチ開始時にプレビュー表示
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches && e.touches[0]) {
+                    brushPreview.style.left = e.touches[0].clientX + 'px';
+                    brushPreview.style.top = e.touches[0].clientY + 'px';
+                    updateBrushPreview();
+                }
+            });
+            
+            // タッチ終了時にプレビュー非表示
+            canvas.addEventListener('touchend', () => {
                 brushPreview.style.display = 'none';
             });
             
