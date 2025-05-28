@@ -356,6 +356,19 @@
                 updateBrushPreview();
             });
             
+            // カラーピッカーのタッチイベントを処理
+            colorPicker.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+            });
+            
+            colorPicker.addEventListener('touchmove', (e) => {
+                e.stopPropagation();
+            });
+            
+            colorPicker.addEventListener('touchend', (e) => {
+                e.stopPropagation();
+            });
+            
             penTool.addEventListener('click', () => {
                 currentTool = 'pen';
                 setActiveTool(penTool);
@@ -451,7 +464,13 @@
             canvas.addEventListener('mouseenter', updateBrushPreview);
             canvas.addEventListener('mouseleave', () => brushPreview.style.display = 'none');
             
-            function startDrawing(point) {
+            function startDrawing(point, pointerType) {
+                // ペン以外の入力を無視（オプション）
+                if (pointerType === 'touch') {
+                    // 指でのタッチの場合は描画しない
+                    // return;
+                }
+                
                 isDrawing = true;
                 
                 if (currentTool === 'eyedropper') {
@@ -482,6 +501,9 @@
                 }
                 
                 currentPath.moveTo(point);
+                
+                // デバッグ用：入力タイプを表示
+                console.log('Drawing with:', pointerType);
             }
             
             function continueDrawing(point) {
@@ -498,12 +520,49 @@
                 currentPath = null;
             }
             
-            canvas.addEventListener('mousedown', (e) => {
+            // Pointer Eventsを使用（モダンなイベント処理）
+            canvas.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
-                startDrawing(getEventPoint(e));
+                const rect = canvas.getBoundingClientRect();
+                const point = new Point(e.clientX - rect.left, e.clientY - rect.top);
+                startDrawing(point, e.pointerType);
             });
             
-            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('pointermove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const point = new Point(e.clientX - rect.left, e.clientY - rect.top);
+                
+                // ブラシプレビュー更新
+                brushPreview.style.left = e.clientX + 'px';
+                brushPreview.style.top = e.clientY + 'px';
+                updateBrushPreview();
+                
+                if (isDrawing) {
+                    continueDrawing(point);
+                }
+            });
+            
+            canvas.addEventListener('pointerup', (e) => {
+                e.preventDefault();
+                stopDrawing();
+            });
+            
+            canvas.addEventListener('pointerenter', updateBrushPreview);
+            canvas.addEventListener('pointerleave', () => brushPreview.style.display = 'none');
+            
+            // ツールバー要素のタッチイベントを制御
+            const toolbar = document.querySelector('.toolbar');
+            toolbar.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+            });
+            
+            toolbar.addEventListener('touchmove', (e) => {
+                e.stopPropagation();
+            });
+            
+            toolbar.addEventListener('touchend', (e) => {
+                e.stopPropagation();
+            });
             
             updateBrushPreview();
         };
