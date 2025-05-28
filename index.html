@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>お絵描きアプリ</title>
-    <script src="https://unpkg.com/paper@0.12.17/dist/paper-full.min.js">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -276,8 +276,15 @@
 
     <script>
         // Paper.jsの初期化
-        paper.install(window);
         window.onload = function() {
+            // Paper.jsが読み込まれているかチェック
+            if (typeof paper === 'undefined') {
+                console.error('Paper.js が読み込まれていません');
+                alert('描画ライブラリの読み込みに失敗しました。ページを再読み込みしてください。');
+                return;
+            }
+            
+            paper.install(window);
             const canvas = document.getElementById('canvas');
             paper.setup(canvas);
             
@@ -367,38 +374,15 @@
             
             // 保存ボタン
             saveButton.addEventListener('click', () => {
-                try {
-                    // キャンバスからPNG形式でダウンロード
-                    const dataURL = canvas.toDataURL('image/png');
-                    
-                    // Blobを使用してより確実にダウンロード
-                    fetch(dataURL)
-                        .then(res => res.blob())
-                        .then(blob => {
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-                            link.download = `drawing_${timestamp}.png`;
-                            link.href = url;
-                            link.style.display = 'none';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            window.URL.revokeObjectURL(url);
-                        })
-                        .catch(err => {
-                            console.error('保存エラー:', err);
-                            // フォールバック: 従来の方法
-                            const link = document.createElement('a');
-                            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-                            link.download = `drawing_${timestamp}.png`;
-                            link.href = dataURL;
-                            link.click();
-                        });
-                } catch (error) {
-                    console.error('保存処理エラー:', error);
-                    alert('保存に失敗しました。右クリック→「名前を付けて画像を保存」をお試しください。');
-                }
+                // キャンバスからPNG形式でダウンロード
+                const dataURL = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                link.download = `drawing_${timestamp}.png`;
+                link.href = dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             });
             
             // クリアボタン
